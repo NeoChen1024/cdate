@@ -9,38 +9,38 @@
  * if year < 1901 or year > 2050, chinese_calender return 0.
  */
 
-/* c_calender : 包含农历年、月、日、节气、四柱 {{{ */
+/* c_calender : 包含農曆年、月、日、節氣、四柱 {{{ */
 struct c_calender { int year, month, day, month_stat, sizhu;};
 /* 
- * c_calender 结构说明： 
+ * c_calender 結構說明： 
  *
- * year, month, day 农历年月日
+ * year, month, day 農曆年月日
  *
  * +-------------------------------------------+
  * |month_stat|   1   |   2    | 4-7 |   8-16  |
  * |----------+-------+--------+-----+---------|
- * |  说  明  |  闰月 | 大小月 |  空 | 节气序号|
+ * |  說  明  |  閏月 | 大小月 |  空 | 節氣序號|
  * +-------------------------------------------+
- * 注： 节气序号为0-23，若当日无节气，则序号为24。
+ * 注： 節氣序號爲0-23，若當日無節氣，則序號爲24。
  *
  * +---------------------------------------+
  * | sizhu |  1-7  |  8-15 | 16-23 | 24-31 |
  * |-------+-------+-------+-------+-------|
- * | 说 明 | 时 柱 | 日 柱 | 月 柱 | 年 柱 |
+ * | 說 明 | 時 柱 | 日 柱 | 月 柱 | 年 柱 |
  * +---------------------------------------+
- * 注： 各柱为小于60的整数，除以10得到天干，除以12得到地支。
+ * 注： 各柱爲小於60的整數，除以10得到天干，除以12得到地支。
  * }}} */
 
-/* 日期数据 {{{ */
+/* 日期資料 {{{ */
 
-/* 1900-2051年农历数据 */
+/* 1900-2051年農曆數據 */
 static const unsigned int calendar_data[] = {
 
 /* calendar_data format:
  * +------------------------------------------------------------------+
- * |单位(位)|   1-4   |     5-16     |     17     |  18-20  |  21-31  |
+ * |單位(位)|   1-4   |     5-16     |     17     |  18-20  |  21-31  |
  * |--------+---------+--------------+------------+---------+---------|
- * | 说  明 |闰月月份 | 每月的大小月 |闰月的大小月|    空   |    空   |
+ * | 說  明 |閏月月份 | 每月的大小月 |閏月的大小月|    空   |    空   |
  * +------------------------------------------------------------------+
  */
 
@@ -61,7 +61,7 @@ static const unsigned int calendar_data[] = {
 0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0, 
 0x14b63};
 
-/* 节气预计算值 */
+/* 節氣預計算值 */
 static const int jieqi_data[] = {
 	 0, 21208, 42467, 63836, 85337, 107014, 128867, 150921, 173149,
 	 195551, 218072, 240693, 263343, 285989, 308563, 331033, 353350,
@@ -69,15 +69,15 @@ static const int jieqi_data[] = {
 
 /* }}} */
 
-/* 农历相关函数  {{{ */
+/* 農曆相關函數  {{{ */
 
-/* 测试calendar_data某年某位的值 */
+/* 測試calendar_data某年某位的值 */
 #define NIAN_BIT(nian, bit)(calendar_data[nian - 1900] & bit)
 
-/* 农历某年哪个月是闰月，没有闰则为0 */
+/* 農曆某年哪個月是閏月，沒有閏則爲0 */
 #define WHICH_RUN_YUE(nian)(NIAN_BIT(nian, 0xF))
 
-/* 农历某年闰月的天数 */
+/* 農曆某年閏月的天數 */
 static int days_of_run_rue(int nian)
 {
 	if(WHICH_RUN_YUE(nian))
@@ -86,7 +86,7 @@ static int days_of_run_rue(int nian)
 		return 0;
 }
 
-/* 农历某年的天数 */
+/* 農曆某年的天數 */
 static int days_of_nian(int nian)
 {
 	int i;
@@ -97,7 +97,7 @@ static int days_of_nian(int nian)
 	return sum + days_of_run_rue(nian);
 }
 
-/* 是否为公历闰年 */
+/* 是否爲公曆閏年 */
 static int is_bissextile(int year)
 {
 	if ((year % 4==0 && year % 100!=0) || year % 400==0)
@@ -106,7 +106,7 @@ static int is_bissextile(int year)
 		 return 0;
 }
 
-/* 公历某年年初到某月前一月的天数,一月忽略 */
+/* 公曆某年年初到某月前一月的天數,一月忽略 */
 static int sum_to_premonth(int year, int month)
 {
 	int i, sum = (month - 1)?(month - 1) * 30:0;
@@ -126,21 +126,21 @@ static int sum_to_premonth(int year, int month)
 }
 /* }}} */
 
-/* 公历相关函数 {{{ */
+/* 公曆相關函數 {{{ */
 
-/* 计算两个公历日期的相差天数 */
+/* 計算兩個公曆日期的相差天數 */
 static int sub_two_date(int year1, int month1, int day1,
 		  		int year2, int month2, int day2)
 {
 	int i;
 
-	/* 两个年份到年初的天数相减并加上365/366 */
+	/* 兩個年份到年初的天數相減並加上365/366 */
 	int sum = sum_to_premonth(year1, month1) + 
 		 	365 - sum_to_premonth(year2, month2);
 	if (is_bissextile(year2)) sum--;
 	sum += day1 - day2;
 
-	/* 闰年365+1 */
+	/* 閏年365+1 */
 	for (i=year2+1; i<year1; i++)
 		if (is_bissextile(i)) sum++;
 	if ((year1 - year2) > 0)
@@ -153,19 +153,19 @@ static int sub_two_date(int year1, int month1, int day1,
 	return sum;
 }
 
-/* 公历某年的第n个节气为几号(从0小寒算起) */
+/* 公曆某年的第n個節氣爲幾號(從0小寒算起) */
 static int which_day_is_jieqi(int year, int n)
 {
 	short days_of_permonth[] = {0,31,28,31,30,31,30,31,31,30,31,30,31};
 	int a,i = 0;
 	if (is_bissextile(year)) days_of_permonth[2]++;
 
-	/* 1900年1月6日2点05分为小寒，精确到分往后推算 */
+	/* 1900年1月6日2點05分爲小寒，精確到分往後推算 */
 	a = 525948 * (year - 1900) -
 		 sub_two_date(year, 1, 6, 1900, 1, 6) * 24 * 60
 		 + jieqi_data[n] + 125;
 
-	/* 若为小寒且在6日00点以前，天数减1 */
+	/* 若爲小寒且在6日00點以前，天數減1 */
 	if (a < 0) i--;
 	a = i + 6 + a / (24 * 60);
 
@@ -177,24 +177,23 @@ static int which_day_is_jieqi(int year, int n)
 
 /* }}} */
 
-/* 计算农历年月日 {{{ */
-/* 唯一的导出函数 */
+/* 計算農曆年月日 {{{ */
+/* 唯一的導出函數 */
 int chinese_calender(int year, int month, int day, int hour,
 							  struct c_calender *d)
-/* year month day hour 为公历年月日时，d用来传出数据，
- * 函数默认返回1，若年份小于1901大于2050,返回0。 */
+/* year month day hour 爲公曆年月日時，d用來傳出數據，
+ * 函數默認返回1，若年份小於1901大於2050,返回0。 */
 {
 
 	static int percalc_val[] = {0, 18279, 36529};
-
-	unsigned int i, x, run_yue, is_run_yue = 0;
+	int i, x = 0, run_yue, is_run_yue = 0;
 
 	int all_days = sub_two_date(year, month, day, 1900, 1, 31);
 
 	if (year < 1901 || year > 2050)
 		 return 1;
 
-	/* 此处为优化算法，每隔50年置一预计算值 */
+	/* 此處爲優化演算法，每隔50年置一預計算值 */
 	for (i=0; i<5; i++)
 		if ((year > (i * 50+1900)) && (year <= ((i + 1) * 50+1900)))
 			 break;
@@ -216,9 +215,9 @@ int chinese_calender(int year, int month, int day, int hour,
 
 	run_yue = WHICH_RUN_YUE(i);
 
-	/* TODO 此处尚待优化 */
+	/* TODO 此處尚待優化 */
 	for (i=1; i<13 && all_days>0; i++) {
-		/* 如果有农历闰月 */
+		/* 如果有農曆閏月 */
 		if ((run_yue > 0) && (i == run_yue + 1) && (is_run_yue == 0)) {
 			--i;
 			is_run_yue = 1;
@@ -247,7 +246,7 @@ int chinese_calender(int year, int month, int day, int hour,
 	d->day = all_days + 1;
 	d->month_stat = is_run_yue;
 
-	/* 判断大小月 */
+	/* 判斷大小月 */
 	if (is_run_yue)
 		d->month_stat += 
 			 (NIAN_BIT(d->year, 0x10000)?1:0) << 1;
@@ -256,7 +255,7 @@ int chinese_calender(int year, int month, int day, int hour,
 			 (NIAN_BIT(d->year, 0x10000>>d->month)?1:0) << 1;
 
 
-	/* 判断节气 */
+	/* 判斷節氣 */
 	if (day == which_day_is_jieqi(year, (month - 1) * 2))
 		d->month_stat += (month - 1) * 2 << 8;
 	else if (day == which_day_is_jieqi(year, (month - 1) * 2 + 1))
@@ -264,25 +263,25 @@ int chinese_calender(int year, int month, int day, int hour,
 	else
 		d->month_stat += 24 << 8;
 
-	/* 计算四柱 */
-	/* 年柱，以正月初一划分，1900年正月初一为庚子年 */
+	/* 計算四柱 */
+	/* 年柱，以正月初一劃分，1900年正月初一爲庚子年 */
 	x = year - 1900 + 36;
-	/* 调整正月初一前的年柱 */
+	/* 調整正月初一前的年柱 */
 	if ((month <= 2) && (d->month >= 11)) x--;
 	d->sizhu = x % 60 << 24;
 
-	/* 月柱，以节（公历每月的第一个节气为节，第二个为气）划分，
-	 * 1900年1月小寒前一天为丙子月
+	/* 月柱，以節（公曆每月的第一個節氣爲節，第二個爲氣）劃分，
+	 * 1900年1月小寒前一天爲丙子月
 	 */
 	x = month + 12 + (year - 1900) * 12;
-	/* 调整节前的月柱 */
+	/* 調整節前的月柱 */
 	if (day < which_day_is_jieqi(year, (month - 1) * 2)) x--;
 	d->sizhu += x % 60 << 16;
 
-	/* 日柱，前一天的23时与当天的00时为子时，1900年1月1日为甲戌日 */
+	/* 日柱，前一天的23時與當天的00時爲子時，1900年1月1日爲甲戌日 */
 	d->sizhu += (sub_two_date(year, month, day, 1900, 1, 1) + 10) % 60 << 8;
 
-	/* 时柱 */
+	/* 時柱 */
 	d->sizhu += ((sub_two_date(year, month, day, 1900, 1, 1) * 24
 				   + hour + 1) / 2) % 60;
 
